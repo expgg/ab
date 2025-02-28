@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>exp</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
+    
+    :root {
+      --bg-color: #000000;
+      --primary-color: #ff0000;
+      --text-color: #ffffff;
+      --accent-color: #ff3333;
+      --dark-accent: #990000;
+      --card-bg: #111111;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Orbitron', sans-serif;
+    }
+    
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      padding-bottom: 80px;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      color: var(--primary-color);
+      text-shadow: 0 0 10px var(--primary-color);
+      margin: 20px 0;
+    }
+    
+    .audiobook-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 30px;
+      margin-top: 30px;
+    }
+    
+    .audiobook-card {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+      background-color: var(--card-bg);
+    }
+    
+    .audiobook-card::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: var(--primary-color);
+      filter: blur(5px);
+      animation: neonPulse 1.5s infinite alternate;
+      z-index: -1;
+    }
+    
+    @keyframes neonPulse {
+      0% {
+        opacity: 0.5;
+        filter: blur(5px);
+      }
+      100% {
+        opacity: 1;
+        filter: blur(10px);
+      }
+    }
+    
+    .audiobook-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .audiobook-card img {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+    }
+    
+    .audiobook-info {
+      padding: 10px;
+    }
+    
+    .audiobook-title {
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .audiobook-author {
+      font-size: 0.8rem;
+      color: var(--accent-color);
+    }
+    
+    .bottom-player {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: rgba(20, 20, 20, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      z-index: 1000;
+      border-top: 1px solid var(--dark-accent);
+    }
+    
+    .bottom-player.active {
+      transform: translateY(0);
+    }
+    
+    .bottom-player-info {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .bottom-player-cover {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 5px;
+      margin-right: 15px;
+    }
+    
+    .bottom-player-title {
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .bottom-player-controls {
+      display: flex;
+      align-items: center;
+    }
+    
+    .player-control-btn {
+      background: none;
+      border: none;
+      color: var(--text-color);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0 10px;
+    }
+    
+    .player-control-btn:hover {
+      color: var(--primary-color);
+    }
+    
+    /* Details page styles */
+    .audiobook-detail {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-color);
+      z-index: 1001;
+      overflow-y: auto;
+      flex-direction: column;
+    }
+    
+    .detail-header {
+      display: flex;
+      align-items: flex-start;
+      padding: 20px;
+      position: relative;
+    }
+    
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: none;
+      border: none;
+      color: var(--text-color);
+      font-size: 1.5rem;
+      cursor: pointer;
+      z-index: 10;
+    }
+    
+    .detail-cover {
+      width: 150px;
+      height: 225px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-right: 20px;
+      margin-left: 40px;
+    }
+    
+    .detail-info {
+      flex: 1;
+    }
+    
+    .detail-title {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+    }
+    
+    .detail-author {
+      font-size: 1rem;
+      color: var(--accent-color);
+      margin-bottom: 20px;
+    }
+    
+    .detail-description {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 30px;
+    }
+    
+    .audio-player {
+      padding: 20px;
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      margin: 0 20px;
+      position: relative;
+    }
+    
+    .audio-player::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 100%;
+      height: 10px;
+      background: var(--primary-color);
+      filter: blur(10px);
+      animation: neonPulse 1.5s infinite alternate;
+      z-index: -1;
+    }
+    
+    .progress-container {
+      position: relative;
+      height: 8px;
+      background-color: #333;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background-color: var(--primary-color);
+      width: 0;
+      border-radius: 4px;
+      position: relative;
+    }
+    
+    .time-display {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      margin-bottom: 15px;
+    }
+    
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .control-btn {
+      background: none;
+      border: none;
+      color: var(--text-color);
+      font-size: 1.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .control-btn:hover {
+      color: var(--primary-color);
+    }
+    
+    .play-pause-btn {
+      font-size: 2.5rem;
+    }
+    
+    .speed-btn {
+      font-size: 1rem;
+      padding: 5px 10px;
+      background-color: var(--dark-accent);
+      border-radius: 5px;
+    }
+    
+    @media (max-width: 768px) {
+      .audiobook-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 20px;
+      }
+      
+      .detail-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      
+      .detail-cover {
+        margin: 30px 0 20px;
+      }
+      
+      .back-button {
+        top: 10px;
+        left: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>ExploRiot</h1>
+    </header>
+    
+    <div class="audiobook-grid" id="audiobookGrid">
+      <!-- Audiobooks will be dynamically inserted here -->
+    </div>
+  </div>
+  
+  <div class="bottom-player" id="bottomPlayer">
+    <div class="bottom-player-info">
+      <img src="" class="bottom-player-cover" id="bottomPlayerCover">
+      <div>
+        <div class="bottom-player-title" id="bottomPlayerTitle"></div>
+      </div>
+    </div>
+    <div class="bottom-player-controls">
+      <button class="player-control-btn" id="bottomPlayerPlayBtn">▶</button>
+    </div>
+  </div>
+  
+  <div class="audiobook-detail" id="audiobookDetail">
+    <button class="back-button" id="backButton">←</button>
+    <div class="detail-header">
+      <img src="" class="detail-cover" id="detailCover">
+      <div class="detail-info">
+        <h2 class="detail-title" id="detailTitle"></h2>
+        <div class="detail-author" id="detailAuthor"></div>
+        <div class="detail-description" id="detailDescription"></div>
+      </div>
+    </div>
+    
+    <div class="audio-player">
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="time-display">
+        <span id="currentTime">00:00</span>
+        <span id="totalTime">00:00</span>
+      </div>
+      <div class="controls">
+        <button class="control-btn" id="backwardBtn">←15</button>
+        <button class="control-btn play-pause-btn" id="playPauseBtn">▶</button>
+        <button class="control-btn" id="forwardBtn">15→</button>
+        <button class="control-btn speed-btn" id="speedBtn">1.0x</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Audiobook data - ADD NEW AUDIOBOOKS HERE
+    const audiobooks = [
+      {
+        id: 1,
+        title: "It’s Raining Men",
+        author: "Dr. Creepen",
+        cover: "https://media.tenor.com/tonz-WEiTccAAAAM/smile-creepy.gif",
+        audioSrc: "https://github.com/expgg/audios/raw/refs/heads/main/It%E2%80%99s%20Raining%20Men%20_%20A%20STONE%20COLD%20CLASSIC%20CREEPYPASTA%E2%80%A6%20PLEASE%20DON%E2%80%99T%20MISS%20THIS%20ONE%20%5BVUyLxE1qP2g%5D_2.mp3",
+        description: "It’s Raining Men _ A STONE COLD CLASSIC CREEPYPASTA… "
+      }
+      
+    
+    ];
+    
+    // DOM Elements
+    const audiobookGrid = document.getElementById('audiobookGrid');
+    const audiobookDetail = document.getElementById('audiobookDetail');
+    const backButton = document.getElementById('backButton');
+    const detailCover = document.getElementById('detailCover');
+    const detailTitle = document.getElementById('detailTitle');
+    const detailAuthor = document.getElementById('detailAuthor');
+    const detailDescription = document.getElementById('detailDescription');
+    const progressBar = document.getElementById('progressBar');
+    const progressContainer = document.getElementById('progressContainer');
+    const currentTimeDisplay = document.getElementById('currentTime');
+    const totalTimeDisplay = document.getElementById('totalTime');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const backwardBtn = document.getElementById('backwardBtn');
+    const forwardBtn = document.getElementById('forwardBtn');
+    const speedBtn = document.getElementById('speedBtn');
+    const bottomPlayer = document.getElementById('bottomPlayer');
+    const bottomPlayerCover = document.getElementById('bottomPlayerCover');
+    const bottomPlayerTitle = document.getElementById('bottomPlayerTitle');
+    const bottomPlayerPlayBtn = document.getElementById('bottomPlayerPlayBtn');
+    
+    // Audio element
+    const audioElement = new Audio();
+    let currentAudiobook = null;
+    let speeds = [0.75, 1.0, 1.25, 1.5, 2.0];
+    let currentSpeedIndex = 1;
+    
+    // Initialize the website
+    function init() {
+      renderAudiobooks();
+      setupEventListeners();
+      loadLastPlayed();
+    }
+    
+    // Render audiobooks in the grid
+    function renderAudiobooks() {
+      audiobookGrid.innerHTML = '';
+      
+      audiobooks.forEach(book => {
+        const bookCard = document.createElement('div');
+        bookCard.className = 'audiobook-card';
+        bookCard.dataset.id = book.id;
+        
+        bookCard.innerHTML = `
+          <img src="${book.cover}" alt="${book.title}">
+          <div class="audiobook-info">
+            <div class="audiobook-title">${book.title}</div>
+            <div class="audiobook-author">${book.author}</div>
+          </div>
+        `;
+        
+        audiobookGrid.appendChild(bookCard);
+      });
+    }
+    
+    // Set up event listeners
+    function setupEventListeners() {
+      // Click on audiobook card
+      audiobookGrid.addEventListener('click', (e) => {
+        const card = e.target.closest('.audiobook-card');
+        if (card) {
+          const bookId = parseInt(card.dataset.id);
+          openAudiobookDetail(bookId);
+        }
+      });
+      
+      // Back button
+      backButton.addEventListener('click', closeAudiobookDetail);
+      
+      // Progress container click
+      progressContainer.addEventListener('click', (e) => {
+        const rect = progressContainer.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        audioElement.currentTime = percent * audioElement.duration;
+        updateProgressBar();
+      });
+      
+      // Audio element event listeners
+      audioElement.addEventListener('timeupdate', updateProgressBar);
+      audioElement.addEventListener('loadedmetadata', () => {
+        totalTimeDisplay.textContent = formatTime(audioElement.duration);
+        currentTimeDisplay.textContent = formatTime(audioElement.currentTime);
+      });
+      audioElement.addEventListener('ended', () => {
+        playPauseBtn.textContent = '▶';
+        bottomPlayerPlayBtn.textContent = '▶';
+        savePlaybackPosition();
+      });
+      
+      // Player controls
+      playPauseBtn.addEventListener('click', togglePlayPause);
+      backwardBtn.addEventListener('click', () => skip(-15));
+      forwardBtn.addEventListener('click', () => skip(15));
+      speedBtn.addEventListener('click', changeSpeed);
+      
+      // Bottom player
+      bottomPlayerPlayBtn.addEventListener('click', togglePlayPause);
+      bottomPlayer.addEventListener('click', (e) => {
+        if (e.target !== bottomPlayerPlayBtn && currentAudiobook) {
+          openAudiobookDetail(currentAudiobook.id);
+        }
+      });
+    }
+    
+    // Open audiobook detail page
+    function openAudiobookDetail(bookId) {
+      const book = audiobooks.find(book => book.id === bookId);
+      if (!book) return;
+      
+      detailCover.src = book.cover;
+      detailTitle.textContent = book.title;
+      detailAuthor.textContent = book.author;
+      detailDescription.textContent = book.description;
+      
+      audiobookDetail.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      
+      if (currentAudiobook && currentAudiobook.id === bookId) {
+        // Already playing this audiobook
+        updateProgressBar();
+      } else {
+        // Load new audiobook
+        loadAudiobook(book);
+      }
+    }
+    
+    // Close audiobook detail page
+    function closeAudiobookDetail() {
+      audiobookDetail.style.display = 'none';
+      document.body.style.overflow = 'auto';
+      savePlaybackPosition();
+    }
+    
+    // Load audiobook
+    function loadAudiobook(book) {
+      currentAudiobook = book;
+      
+      // Pause current audio if playing
+      if (!audioElement.paused) {
+        audioElement.pause();
+      }
+      
+      // Set new audio source
+      audioElement.src = book.audioSrc;
+      
+      // Load audio
+      audioElement.load();
+      
+      // Reset speed
+      currentSpeedIndex = 1;
+      audioElement.playbackRate = speeds[currentSpeedIndex];
+      speedBtn.textContent = `${speeds[currentSpeedIndex]}x`;
+      
+      // Update play button
+      playPauseBtn.textContent = '▶';
+      
+      // Show bottom player
+      bottomPlayer.classList.add('active');
+      bottomPlayerCover.src = book.cover;
+      bottomPlayerTitle.textContent = book.title;
+      
+      // Load saved position
+      const savedPosition = localStorage.getItem(`audiobook_${book.id}_position`);
+      if (savedPosition) {
+        audioElement.currentTime = parseFloat(savedPosition);
+      }
+    }
+    
+    // Toggle play/pause
+    function togglePlayPause() {
+      if (!currentAudiobook) return;
+      
+      if (audioElement.paused) {
+        audioElement.play();
+        playPauseBtn.textContent = '❚❚';
+        bottomPlayerPlayBtn.textContent = '❚❚';
+      } else {
+        audioElement.pause();
+        playPauseBtn.textContent = '▶';
+        bottomPlayerPlayBtn.textContent = '▶';
+        savePlaybackPosition();
+      }
+    }
+    
+    // Skip forward or backward
+    function skip(seconds) {
+      if (!audioElement.src) return;
+      
+      audioElement.currentTime += seconds;
+      updateProgressBar();
+    }
+    
+    // Change playback speed
+    function changeSpeed() {
+      currentSpeedIndex = (currentSpeedIndex + 1) % speeds.length;
+      audioElement.playbackRate = speeds[currentSpeedIndex];
+      speedBtn.textContent = `${speeds[currentSpeedIndex]}x`;
+    }
+    
+    // Update progress bar
+    function updateProgressBar() {
+      if (!audioElement.duration) return;
+      
+      const percent = (audioElement.currentTime / audioElement.duration) * 100;
+      progressBar.style.width = `${percent}%`;
+      
+      currentTimeDisplay.textContent = formatTime(audioElement.currentTime);
+      totalTimeDisplay.textContent = formatTime(audioElement.duration);
+    }
+    
+    // Format time in MM:SS
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    // Save playback position
+    function savePlaybackPosition() {
+      if (currentAudiobook && audioElement.currentTime > 0) {
+        localStorage.setItem(`audiobook_${currentAudiobook.id}_position`, audioElement.currentTime);
+        localStorage.setItem('last_played_audiobook', currentAudiobook.id);
+      }
+    }
+    
+    // Load last played audiobook
+    function loadLastPlayed() {
+      const lastPlayedId = localStorage.getItem('last_played_audiobook');
+      if (lastPlayedId) {
+        const bookId = parseInt(lastPlayedId);
+        const book = audiobooks.find(book => book.id === bookId);
+        if (book) {
+          currentAudiobook = book;
+          bottomPlayer.classList.add('active');
+          bottomPlayerCover.src = book.cover;
+          bottomPlayerTitle.textContent = book.title;
+          
+          // Set audio source but don't play automatically
+          audioElement.src = book.audioSrc;
+          
+          // Load saved position
+          const savedPosition = localStorage.getItem(`audiobook_${book.id}_position`);
+          if (savedPosition) {
+            audioElement.currentTime = parseFloat(savedPosition);
+          }
+        }
+      }
+    }
+    
+    // Start the app
+    window.addEventListener('load', init);
+  </script>
+</head>
+<body>
+</body>
+</html>
